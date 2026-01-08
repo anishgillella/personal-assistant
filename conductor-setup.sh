@@ -1,12 +1,16 @@
 #!/bin/bash
 set -e
 
-# Copy .env from repo root to workspace
-if [ -f "$CONDUCTOR_ROOT_PATH/.env" ]; then
-    cp "$CONDUCTOR_ROOT_PATH/.env" .env
-    echo "Environment loaded from repo root."
+# Get the parent directory (where .env lives, shared across all workspaces)
+PARENT_DIR="$(dirname "$(pwd)")"
+
+# Copy .env from parent directory to workspace
+if [ -f "$PARENT_DIR/.env" ]; then
+    cp "$PARENT_DIR/.env" .env
+    echo "Environment loaded from $PARENT_DIR/.env"
 else
-    echo "Warning: No .env found at $CONDUCTOR_ROOT_PATH/.env"
+    echo "Warning: No .env found at $PARENT_DIR/.env"
+    echo "Please create a .env file in: $PARENT_DIR"
 fi
 
 # Optional: Set up Python virtual environment if it doesn't exist
