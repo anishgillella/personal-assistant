@@ -27,6 +27,7 @@ wheels/
 .venv
 venv/
 .env
+.env.local
 
 # IDE
 .vscode/
@@ -46,6 +47,8 @@ logs/
 node_modules/
 npm-debug.log
 yarn-error.log
+.next/
+out/
 dist/
 build/
 

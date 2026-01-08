@@ -1,243 +1,193 @@
-# Personal Assistant: LLM-Powered Question-Answering Chatbot
+# QA Assistant: LLM-Powered Question-Answering Chatbot
 
-An intelligent, tool-enabled conversational chatbot built with advanced LLM capabilities, comprehensive evaluation metrics, and an interactive web dashboard for real-time interaction and performance analysis.
+An intelligent, tool-enabled conversational chatbot built with Gemini 2.5 Flash, featuring comprehensive evaluation metrics and an interactive web dashboard.
 
 ## Overview
 
-This project implements a sophisticated question-answering agent that leverages:
-- **LLM-powered conversation** with function calling capabilities
-- **Multi-tool integration** for enhanced reasoning and information retrieval
-- **Rigorous evaluation framework** with quality metrics
+This project implements a question-answering agent that leverages:
+- **LLM-powered conversation** with function calling capabilities via OpenRouter
+- **Multi-tool integration** (web search + calculator) for enhanced reasoning
+- **Rigorous evaluation framework** with LLM-as-judge metrics
 - **Interactive web dashboard** for live chatbot interaction and analytics
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Backend** | Python, FastAPI |
+| **LLM** | Gemini 2.5 Flash via OpenRouter |
+| **Tools** | SerpAPI (web search), Calculator |
+| **Frontend** | Next.js 14, React, Tailwind CSS |
+| **Charts** | Recharts |
 
 ## Features
 
-### 🤖 Core Chatbot Capabilities
-- **Function Calling**: Multi-tool integration for expanded LLM capabilities
-- **Contextual Reasoning**: Maintains conversation history for coherent interactions
-- **General-Purpose QA**: Answers open-ended questions across diverse domains
-- **Tool-Augmented Generation**: Integrates external data sources for accurate responses
+### Core Chatbot
+- **Function Calling**: Automatic tool selection and execution
+- **Conversation Context**: Maintains chat history for coherent multi-turn dialogues
+- **Two Integrated Tools**:
+  - **Search**: Web search via SerpAPI for current information
+  - **Calculator**: Safe mathematical expression evaluation
 
-### 📊 Evaluation Framework
-- **Quality Metrics**: Comprehensive evaluation of chatbot responses
-- **Dataset-Driven**: Systematic evaluation against a curated question-answer dataset
-- **Metric Selection**: Carefully chosen metrics for meaningful performance assessment
-- **Detailed Reporting**: Structured evaluation results and insights
+### Evaluation Framework
+- **LLM-as-Judge**: Uses the same LLM to evaluate responses
+- **5 Metrics**: Relevance, Accuracy, Completeness, Coherence, Tool Usage
+- **25-question Dataset**: Covers math calculations and factual queries
+- **Detailed Reporting**: Per-question breakdown with explanations
 
-### 🎨 Web Dashboard
-- **Live Chat Interface**: Real-time interaction with the chatbot
-- **Performance Analytics**: Visualize evaluation metrics and trends
-- **Response Analysis**: Detailed breakdown of chatbot responses
-- **Conversation History**: Track and review past interactions
+### Web Dashboard
+- **Chat Interface**: Real-time conversation with tool visibility
+- **Evaluation Dashboard**: Run evaluations and view results
+- **Visualizations**: Bar charts and radar charts for metrics
+- **Responsive Design**: Works on desktop and mobile
 
 ## Project Structure
 
 ```
 .
-├── README.md                          # This file
-├── requirements.txt                   # Python dependencies
 ├── backend/
-│   ├── app.py                        # Main Flask/FastAPI application
+│   ├── app.py                    # FastAPI application
+│   ├── requirements.txt          # Python dependencies
 │   ├── chatbot/
-│   │   ├── __init__.py
-│   │   ├── agent.py                  # LLM-powered question-answering agent
-│   │   ├── tools/
-│   │   │   ├── __init__.py
-│   │   │   ├── search.py             # Web search or knowledge base tool
-│   │   │   ├── calculator.py         # Math/calculation tool
-│   │   │   └── ...                   # Additional tools
-│   │   └── config.py                 # Agent configuration
+│   │   ├── agent.py              # LLM agent with tool calling
+│   │   ├── config.py             # Configuration settings
+│   │   └── tools/
+│   │       ├── search.py         # SerpAPI web search
+│   │       └── calculator.py     # Math calculator
 │   ├── evaluation/
-│   │   ├── __init__.py
-│   │   ├── evaluator.py              # Evaluation logic and metrics
-│   │   ├── metrics.py                # Metric implementations
-│   │   ├── dataset.py                # Dataset management
-│   │   └── results.py                # Results storage and retrieval
+│   │   ├── evaluator.py          # Evaluation runner
+│   │   ├── metrics.py            # LLM-as-judge metrics
+│   │   └── dataset.py            # Dataset loader
 │   └── api/
-│       ├── __init__.py
-│       ├── routes.py                 # API endpoints
-│       └── models.py                 # Request/response models
+│       ├── routes.py             # API endpoints
+│       └── models.py             # Pydantic models
 ├── frontend/
-│   ├── index.html                    # Main dashboard HTML
-│   ├── css/
-│   │   └── style.css                 # Dashboard styling
-│   ├── js/
-│   │   ├── chat.js                   # Chat interface logic
-│   │   ├── dashboard.js              # Analytics and dashboard logic
-│   │   └── api.js                    # API communication
-│   └── components/
-│       ├── chat-interface.html       # Reusable chat component
-│       └── metrics-panel.html        # Metrics display component
+│   ├── src/
+│   │   ├── app/                  # Next.js pages
+│   │   ├── components/           # React components
+│   │   └── lib/                  # API client & types
+│   └── package.json
 ├── data/
-│   ├── evaluation_dataset.json       # QA pairs for evaluation
-│   └── results/                      # Evaluation results storage
-└── .gitignore
+│   ├── evaluation_dataset.json   # 25 QA pairs
+│   └── results/                  # Evaluation results
+├── .env.example                  # Environment template
+└── README.md
 ```
 
 ## Getting Started
 
 ### Prerequisites
-- **Python 3.9+** or **Node.js 16+**
-- **LLM API Key** (OpenAI, Anthropic, or Fireworks.AI)
-- **Optional**: Additional tool provider API keys (e.g., search API)
+- Python 3.9+
+- Node.js 18+
+- OpenRouter API key ([get one here](https://openrouter.ai/keys))
+- SerpAPI key ([get one here](https://serpapi.com/manage-api-key))
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone and navigate to the project**
    ```bash
-   git clone https://github.com/anishgillella/personal-assistant.git
-   cd personal-assistant
+   cd houston
    ```
 
-2. **Set up Python environment**
+2. **Set up Python backend**
    ```bash
+   cd backend
    python -m venv venv
    source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configure environment variables**
+3. **Set up environment variables**
    ```bash
+   cd ..
    cp .env.example .env
    # Edit .env with your API keys
    ```
 
-5. **Initialize data directory**
+4. **Set up frontend**
    ```bash
-   mkdir -p data/results
+   cd frontend
+   npm install
+   cp .env.local.example .env.local
    ```
 
 ### Running the Application
 
-#### Development Mode
-
-1. **Start the backend server**
+1. **Start the backend** (from project root)
    ```bash
-   python backend/app.py
+   cd backend
+   source venv/bin/activate
+   python app.py
    ```
-   The API will be available at `http://localhost:5000`
+   Backend runs at `http://localhost:8000`
 
-2. **Serve the frontend** (in another terminal)
+2. **Start the frontend** (in another terminal)
    ```bash
-   # Using Python's built-in server
    cd frontend
-   python -m http.server 3000
+   npm run dev
    ```
-   The dashboard will be available at `http://localhost:3000`
+   Frontend runs at `http://localhost:3000`
 
-#### Production Deployment
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment instructions.
+3. **Open the dashboard**
+   Navigate to `http://localhost:3000` in your browser
 
 ## Usage
 
-### Interacting with the Chatbot
-
-**Via Web Dashboard:**
-1. Open `http://localhost:3000` in your browser
-2. Type your question in the chat interface
-3. View the chatbot's response and tool usage
-
-**Via API:**
-```bash
-curl -X POST http://localhost:5000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"query": "What is the capital of France?"}'
-```
+### Chat Interface
+1. Type a question in the chat input
+2. Press Enter or click Send
+3. View the response and any tools used
+4. Click "X tools used" to see tool details
 
 ### Running Evaluation
+1. Navigate to the Evaluation tab
+2. Click "Run Evaluation"
+3. Wait for completion (evaluates 25 questions)
+4. View metrics, charts, and detailed results
 
-```bash
-python -m backend.evaluation.evaluator \
-  --dataset data/evaluation_dataset.json \
-  --output data/results/evaluation_results.json
-```
-
-View results in the dashboard's **Evaluation** tab.
-
-## Chatbot Tools
-
-The chatbot is equipped with the following tools:
-
-### 1. **Search Tool**
-   - Performs web searches or knowledge base lookups
-   - Returns relevant information for answering questions
-
-### 2. **Calculator Tool**
-   - Performs mathematical calculations
-   - Supports complex expressions
-
-### 3. **[Additional Tools]**
-   - Extensible architecture for adding more tools
-
-Tools are called automatically by the LLM when relevant to the user's query.
-
-## Evaluation Metrics
-
-The evaluation framework measures:
-
-- **Relevance**: How well the response addresses the user's question
-- **Accuracy**: Factual correctness of the response
-- **Completeness**: Whether all aspects of the question are covered
-- **Coherence**: Logical flow and readability
-- **Tool Usage**: Appropriate and effective use of available tools
-
-Metrics are computed against a curated evaluation dataset and visualized in the dashboard.
-
-## Architecture
-
-### Backend
-- **Framework**: Flask/FastAPI for REST API
-- **LLM Integration**: OpenAI, Anthropic, or Fireworks.AI SDKs
-- **Async Support**: Async/await for non-blocking operations
-
-### Frontend
-- **Framework**: Vanilla JavaScript or Vue.js/React
-- **Styling**: Modern CSS with responsive design
-- **Real-time Updates**: WebSocket or polling for chat updates
-
-### Data Flow
-```
-User Query → API Endpoint → LLM Agent → Tool Selection → Tool Execution → Response → Dashboard
-```
-
-## Configuration
-
-### LLM Configuration
-Edit `backend/chatbot/config.py` to:
-- Choose your LLM provider (OpenAI, Anthropic, Fireworks.AI)
-- Set model parameters (temperature, max_tokens, etc.)
-- Configure system prompts
-
-### Tool Configuration
-Register new tools in `backend/chatbot/tools/__init__.py`:
-```python
-AVAILABLE_TOOLS = {
-    "search": SearchTool(),
-    "calculator": CalculatorTool(),
-    # Add new tools here
-}
-```
+### Example Questions
+- "What is 15% of 250?" (uses calculator)
+- "Who is the CEO of OpenAI?" (uses search)
+- "Calculate sqrt(144) + 2^5" (uses calculator)
+- "What is the capital of Australia?" (uses search)
 
 ## API Endpoints
 
 ### Chat
-- **POST** `/api/chat` - Send a message to the chatbot
-  - Request: `{ "query": "string", "conversation_id": "string?" }`
-  - Response: `{ "response": "string", "tools_used": [], "confidence": number }`
+- `POST /api/chat` - Send a message
+  ```json
+  { "query": "What is 2 + 2?", "conversation_id": "optional-uuid" }
+  ```
 
 ### Evaluation
-- **GET** `/api/evaluation/results` - Get latest evaluation results
-- **POST** `/api/evaluation/run` - Run evaluation (async)
-- **GET** `/api/evaluation/status` - Check evaluation status
+- `POST /api/evaluation/run` - Start evaluation
+- `GET /api/evaluation/status` - Check progress
+- `GET /api/evaluation/results` - Get results
 
-### History
-- **GET** `/api/conversations` - List conversations
-- **GET** `/api/conversations/{id}` - Get conversation details
+### Conversations
+- `GET /api/conversations` - List all
+- `GET /api/conversations/{id}` - Get one
+- `DELETE /api/conversations/{id}` - Delete one
+
+## Evaluation Metrics
+
+| Metric | Weight | Description |
+|--------|--------|-------------|
+| Accuracy | 30% | Factual correctness compared to expected answer |
+| Relevance | 25% | How well the response addresses the question |
+| Completeness | 20% | Coverage of all aspects of the question |
+| Tool Usage | 15% | Appropriate use of available tools |
+| Coherence | 10% | Clarity and logical structure |
+
+## Configuration
+
+### Backend (`backend/chatbot/config.py`)
+- `MODEL_NAME`: LLM model (default: `google/gemini-2.5-flash-preview`)
+- `MAX_TOKENS`: Maximum response tokens (default: 4096)
+- `TEMPERATURE`: Response randomness (default: 0.7)
+
+### Frontend (`frontend/.env.local`)
+- `NEXT_PUBLIC_API_URL`: Backend API URL
 
 ## Development
 
@@ -247,82 +197,44 @@ AVAILABLE_TOOLS = {
    ```python
    class MyTool:
        name = "my_tool"
-       description = "Description of what this tool does"
-       
+       description = "What this tool does"
+
+       def get_schema(self):
+           return {
+               "type": "function",
+               "function": {
+                   "name": self.name,
+                   "description": self.description,
+                   "parameters": { ... }
+               }
+           }
+
        def execute(self, **kwargs):
            # Implementation
-           pass
+           return {"success": True, "result": ...}
    ```
 
 2. Register in `backend/chatbot/tools/__init__.py`
 
-3. The LLM will automatically discover and use it
-
-### Running Tests
+### Running Evaluation CLI
 ```bash
-pytest tests/ -v
-```
-
-### Code Style
-```bash
-# Format code
-black backend/ frontend/
-
-# Lint
-pylint backend/
+cd backend
+python -m evaluation.evaluator --dataset ../data/evaluation_dataset.json
 ```
 
 ## Troubleshooting
 
-### Common Issues
-
 **"API key not found"**
-- Ensure your API key is set in `.env`
-- Check that the environment variable is loaded: `echo $OPENAI_API_KEY`
+- Ensure `.env` file exists in project root with valid keys
+
+**"CORS error in browser"**
+- Verify backend is running on port 8000
+- Check frontend `.env.local` has correct API URL
 
 **"Tool execution failed"**
-- Check tool dependencies are installed
-- Review logs in `logs/` directory
-
-**"Dashboard not loading"**
-- Verify backend is running on `http://localhost:5000`
-- Check browser console for CORS errors
-
-## Performance Considerations
-
-- **Caching**: Responses are cached to reduce API calls
-- **Streaming**: Long responses are streamed to improve perceived performance
-- **Evaluation**: Run evaluations during off-peak hours
-
-## Limitations & Future Work
-
-- [ ] Multi-language support
-- [ ] Custom model fine-tuning
-- [ ] Advanced memory/context management
-- [ ] Integration with more external data sources
-- [ ] Real-time collaboration features
-- [ ] Mobile app
-
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+- Check SerpAPI key is valid and has quota
+- Review backend logs for details
 
 ## License
 
-MIT License - See LICENSE file for details
-
-## Contact & Support
-
-For questions or issues:
-- Open a GitHub issue
-- Contact: [your-email@example.com]
-
----
-
-**Happy chatting!** 🚀
-
+MIT License
