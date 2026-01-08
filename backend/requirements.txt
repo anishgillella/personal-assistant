@@ -1,0 +1,21 @@
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-dotenv==1.0.0
+pydantic==2.5.3
+
+# HTTP client
+httpx==0.26.0
+aiohttp==3.9.1
+
+# LLM integration (OpenRouter)
+openai==1.12.0
+
+# Search tool
+google-search-results==2.4.2
+
+# Evaluation
+numpy==1.26.3
+
+# CORS
+python-multipart==0.0.6
