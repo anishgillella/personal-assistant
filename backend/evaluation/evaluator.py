@@ -1,6 +1,7 @@
 import json
 from typing import Any, Callable, Optional
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
 
 from evaluation.dataset import DatasetLoader
@@ -85,17 +86,37 @@ class Evaluator:
             "overall_score": round(overall_score, 3),
         }
 
+    def _evaluate_item(self, item: dict[str, Any], index: int) -> tuple[int, dict[str, Any]]:
+        """
+        Evaluate a single item (used for parallel processing).
+
+        Args:
+            item: Dataset item with question, expected_answer, etc.
+            index: Original index in the dataset
+
+        Returns:
+            Tuple of (index, result) to preserve ordering
+        """
+        result = self.evaluate_single(
+            question=item["question"],
+            expected_answer=item["expected_answer"],
+            expected_tools=item.get("expected_tools"),
+        )
+        return (index, result)
+
     def run_evaluation(
         self,
         dataset_path: str,
         progress_callback: Optional[Callable[[int, int], None]] = None,
+        batch_size: int = 10,
     ) -> dict[str, Any]:
         """
-        Run evaluation on a dataset.
+        Run evaluation on a dataset with parallel batch processing.
 
         Args:
             dataset_path: Path to the evaluation dataset JSON file
             progress_callback: Optional callback for progress updates
+            batch_size: Number of evaluations to run in parallel (default: 10)
 
         Returns:
             Complete evaluation results
@@ -104,7 +125,10 @@ class Evaluator:
         dataset = self.dataset_loader.load(dataset_path)
         total = len(dataset)
 
-        results = []
+        # Store results with their original indices
+        indexed_results: dict[int, dict[str, Any]] = {}
+        completed_count = 0
+
         metric_scores = {
             "relevance": [],
             "accuracy": [],
@@ -113,20 +137,33 @@ class Evaluator:
             "tool_usage": [],
         }
 
-        for i, item in enumerate(dataset):
-            if progress_callback:
-                progress_callback(i + 1, total)
+        # Process in batches
+        for batch_start in range(0, total, batch_size):
+            batch_end = min(batch_start + batch_size, total)
+            batch_items = [
+                (dataset[i], i) for i in range(batch_start, batch_end)
+            ]
 
-            # Evaluate single item
-            result = self.evaluate_single(
-                question=item["question"],
-                expected_answer=item["expected_answer"],
-                expected_tools=item.get("expected_tools"),
-            )
+            # Run batch in parallel
+            with ThreadPoolExecutor(max_workers=batch_size) as executor:
+                futures = {
+                    executor.submit(self._evaluate_item, item, idx): idx
+                    for item, idx in batch_items
+                }
 
-            results.append(result)
+                for future in as_completed(futures):
+                    idx, result = future.result()
+                    indexed_results[idx] = result
+                    completed_count += 1
 
-            # Collect metric scores
+                    if progress_callback:
+                        progress_callback(completed_count, total)
+
+        # Sort results by original index to maintain order
+        results = [indexed_results[i] for i in range(total)]
+
+        # Collect metric scores
+        for result in results:
             for metric in result["metrics"]:
                 metric_name = metric["name"]
                 if metric_name in metric_scores:

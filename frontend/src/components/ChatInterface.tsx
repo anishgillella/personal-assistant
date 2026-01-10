@@ -11,13 +11,17 @@ import {
   ChevronUp,
   AlertCircle,
   Sparkles,
+  Coins,
+  RotateCcw,
 } from "lucide-react";
-import type { Message, ToolUsage } from "@/lib/types";
+import type { Message, ToolUsage, TokenUsageStats } from "@/lib/types";
 import api from "@/lib/api";
 
 interface ChatMessage extends Message {
   tools_used?: ToolUsage[];
   isLoading?: boolean;
+  timestamp?: string;
+  tokens?: number;
 }
 
 export default function ChatInterface() {
@@ -26,6 +30,7 @@ export default function ChatInterface() {
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
+  const [tokenUsage, setTokenUsage] = useState<TokenUsageStats | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,6 +41,20 @@ export default function ChatInterface() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Fetch token usage on mount and after each message
+  const fetchTokenUsage = async () => {
+    try {
+      const usage = await api.getTokenUsage();
+      setTokenUsage(usage);
+    } catch {
+      // Silently fail - token usage is not critical
+    }
+  };
+
+  useEffect(() => {
+    fetchTokenUsage();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,9 +93,13 @@ export default function ChatInterface() {
           content: response.response || "",
           tools_used: response.tools_used,
           timestamp: response.timestamp,
+          tokens: response.usage?.total_tokens,
         };
         return newMessages;
       });
+
+      // Update token usage
+      fetchTokenUsage();
 
       if (!response.success && response.error) {
         setError(response.error);
@@ -104,6 +127,24 @@ export default function ChatInterface() {
     inputRef.current?.focus();
   };
 
+  const handleResetUsage = async () => {
+    try {
+      await api.resetTokenUsage();
+      setTokenUsage({ prompt_tokens: 0, completion_tokens: 0, total_tokens: 0, request_count: 0 });
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const formatTokenCount = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       {/* Header */}
@@ -117,12 +158,32 @@ export default function ChatInterface() {
             <p className="text-xs text-gray-500">Powered by Gemini 2.5 Flash</p>
           </div>
         </div>
-        <button
-          onClick={handleNewChat}
-          className="px-4 py-2 text-sm font-medium text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-100 transition-colors"
-        >
-          New Chat
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Token Usage Display */}
+          {tokenUsage && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+              <Coins className="w-4 h-4 text-amber-500" />
+              <div className="text-xs">
+                <span className="text-gray-600">{formatTokenCount(tokenUsage.total_tokens)} tokens</span>
+                <span className="text-gray-400 mx-1">|</span>
+                <span className="text-gray-500">{tokenUsage.request_count} requests</span>
+              </div>
+              <button
+                onClick={handleResetUsage}
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Reset usage"
+              >
+                <RotateCcw className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          <button
+            onClick={handleNewChat}
+            className="px-4 py-2 text-sm font-medium text-violet-600 bg-violet-50 rounded-lg hover:bg-violet-100 transition-colors"
+          >
+            New Chat
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -136,15 +197,15 @@ export default function ChatInterface() {
               How can I help you today?
             </h2>
             <p className="text-gray-500 max-w-md mb-6">
-              I can search the web for information and perform calculations.
-              Ask me anything!
+              I can search the web, check Wikipedia, run code,
+              convert units, and more. Ask me anything!
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
               {[
-                "What is 15% of 250?",
-                "Who is the CEO of OpenAI?",
-                "Calculate sqrt(144) + 2^5",
-                "What is the capital of Australia?",
+                "What is 25% of 80?",
+                "Convert 100 miles to km",
+                "How many days until Christmas?",
+                "Who was Albert Einstein?",
               ].map((suggestion) => (
                 <button
                   key={suggestion}
@@ -255,9 +316,9 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           )}
         </div>
 
-        {/* Tools Used */}
-        {message.tools_used && message.tools_used.length > 0 && (
-          <div className="mt-2">
+        {/* Tools Used and Token Info */}
+        <div className="mt-2 flex items-center gap-3 flex-wrap">
+          {message.tools_used && message.tools_used.length > 0 && (
             <button
               onClick={() => setShowTools(!showTools)}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-violet-600 transition-colors"
@@ -273,38 +334,44 @@ function MessageBubble({ message }: { message: ChatMessage }) {
                 <ChevronDown className="w-3 h-3" />
               )}
             </button>
+          )}
+          {message.tokens && !isUser && (
+            <span className="flex items-center gap-1 text-xs text-gray-400">
+              <Coins className="w-3 h-3" />
+              {message.tokens} tokens
+            </span>
+          )}
+        </div>
 
-            {showTools && (
-              <div className="mt-2 space-y-2">
-                {message.tools_used.map((tool, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-left"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700 rounded-full">
-                        {tool.name}
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      <div className="mb-1">
-                        <span className="font-medium">Input:</span>{" "}
-                        <code className="px-1 py-0.5 bg-gray-100 rounded">
-                          {JSON.stringify(tool.arguments)}
-                        </code>
-                      </div>
-                      <div>
-                        <span className="font-medium">Result:</span>{" "}
-                        <code className="px-1 py-0.5 bg-gray-100 rounded">
-                          {JSON.stringify(tool.result).substring(0, 100)}
-                          {JSON.stringify(tool.result).length > 100 && "..."}
-                        </code>
-                      </div>
-                    </div>
+        {showTools && message.tools_used && (
+          <div className="mt-2 space-y-2">
+            {message.tools_used.map((tool, idx) => (
+              <div
+                key={idx}
+                className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-left"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700 rounded-full">
+                    {tool.name}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600">
+                  <div className="mb-1">
+                    <span className="font-medium">Input:</span>{" "}
+                    <code className="px-1 py-0.5 bg-gray-100 rounded">
+                      {JSON.stringify(tool.arguments)}
+                    </code>
                   </div>
-                ))}
+                  <div>
+                    <span className="font-medium">Result:</span>{" "}
+                    <code className="px-1 py-0.5 bg-gray-100 rounded">
+                      {JSON.stringify(tool.result).substring(0, 100)}
+                      {JSON.stringify(tool.result).length > 100 && "..."}
+                    </code>
+                  </div>
+                </div>
               </div>
-            )}
+            ))}
           </div>
         )}
       </div>

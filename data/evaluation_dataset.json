@@ -30,18 +30,6 @@
     "expected_tools": ["calculator"]
   },
   {
-    "question": "Calculate 15 factorial",
-    "expected_answer": "15! = 1,307,674,368,000",
-    "category": "math",
-    "expected_tools": ["calculator"]
-  },
-  {
-    "question": "What is the current population of Japan?",
-    "expected_answer": "Japan's population is approximately 125 million people (as of 2024)",
-    "category": "factual",
-    "expected_tools": ["search"]
-  },
-  {
     "question": "Who is the CEO of OpenAI?",
     "expected_answer": "Sam Altman is the CEO of OpenAI",
     "category": "factual",
@@ -54,22 +42,94 @@
     "expected_tools": ["search"]
   },
   {
-    "question": "What year was the Eiffel Tower built?",
-    "expected_answer": "The Eiffel Tower was built in 1889",
-    "category": "factual",
-    "expected_tools": ["search"]
-  },
-  {
     "question": "What is the speed of light in meters per second?",
     "expected_answer": "The speed of light is approximately 299,792,458 meters per second",
     "category": "factual",
     "expected_tools": ["search"]
   },
   {
-    "question": "How many planets are in our solar system?",
-    "expected_answer": "There are 8 planets in our solar system: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune",
-    "category": "factual",
-    "expected_tools": ["search"]
+    "question": "Who was Albert Einstein?",
+    "expected_answer": "Albert Einstein was a German-born theoretical physicist who developed the theory of relativity and won the Nobel Prize in Physics in 1921.",
+    "category": "wikipedia",
+    "expected_tools": ["wikipedia"]
+  },
+  {
+    "question": "What is photosynthesis according to Wikipedia?",
+    "expected_answer": "Photosynthesis is a biological process used by plants and other organisms to convert light energy into chemical energy.",
+    "category": "wikipedia",
+    "expected_tools": ["wikipedia"]
+  },
+  {
+    "question": "Tell me about the Great Wall of China",
+    "expected_answer": "The Great Wall of China is a series of fortifications built along the historical northern borders of China to protect against nomadic invasions.",
+    "category": "wikipedia",
+    "expected_tools": ["wikipedia"]
+  },
+  {
+    "question": "Convert 100 miles to kilometers",
+    "expected_answer": "100 miles is approximately 160.93 kilometers",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
+  },
+  {
+    "question": "Convert 32 degrees Fahrenheit to Celsius",
+    "expected_answer": "32°F is 0°C (the freezing point of water)",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
+  },
+  {
+    "question": "How many kilograms is 150 pounds?",
+    "expected_answer": "150 pounds is approximately 68.04 kilograms",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
+  },
+  {
+    "question": "Convert 5 gigabytes to megabytes",
+    "expected_answer": "5 gigabytes is 5,120 megabytes",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
+  },
+  {
+    "question": "How many days until Christmas?",
+    "expected_answer": "The number of days until December 25th from today",
+    "category": "datetime",
+    "expected_tools": ["datetime"]
+  },
+  {
+    "question": "What day of the week was January 1, 2000?",
+    "expected_answer": "January 1, 2000 was a Saturday",
+    "category": "datetime",
+    "expected_tools": ["datetime"]
+  },
+  {
+    "question": "Is 2024 a leap year?",
+    "expected_answer": "Yes, 2024 is a leap year",
+    "category": "datetime",
+    "expected_tools": ["datetime"]
+  },
+  {
+    "question": "What date is 100 days from today?",
+    "expected_answer": "The date 100 days from today",
+    "category": "datetime",
+    "expected_tools": ["datetime"]
+  },
+  {
+    "question": "Write Python code to calculate the factorial of 5",
+    "expected_answer": "The factorial of 5 is 120 (5! = 5 × 4 × 3 × 2 × 1)",
+    "category": "code",
+    "expected_tools": ["code_executor"]
+  },
+  {
+    "question": "Use Python to find all prime numbers between 1 and 20",
+    "expected_answer": "The prime numbers between 1 and 20 are: 2, 3, 5, 7, 11, 13, 17, 19",
+    "category": "code",
+    "expected_tools": ["code_executor"]
+  },
+  {
+    "question": "Run Python code to calculate the sum of squares from 1 to 10",
+    "expected_answer": "The sum of squares from 1 to 10 is 385 (1² + 2² + ... + 10²)",
+    "category": "code",
+    "expected_tools": ["code_executor"]
   },
   {
     "question": "If a rectangle has a length of 12 and width of 8, what is its area and perimeter?",
@@ -84,64 +144,34 @@
     "expected_tools": ["calculator"]
   },
   {
-    "question": "Convert 100 degrees Fahrenheit to Celsius",
-    "expected_answer": "100°F is approximately 37.78°C. The formula is (F - 32) × 5/9 = (100 - 32) × 5/9 = 37.78",
-    "category": "math",
-    "expected_tools": ["calculator"]
-  },
-  {
-    "question": "What is the chemical symbol for gold?",
-    "expected_answer": "The chemical symbol for gold is Au (from the Latin 'aurum')",
-    "category": "factual",
-    "expected_tools": ["search"]
-  },
-  {
-    "question": "What is 3.14159 rounded to 2 decimal places?",
-    "expected_answer": "3.14",
-    "category": "math",
-    "expected_tools": ["calculator"]
-  },
-  {
     "question": "Who wrote Romeo and Juliet?",
     "expected_answer": "William Shakespeare wrote Romeo and Juliet",
-    "category": "factual",
-    "expected_tools": ["search"]
+    "category": "wikipedia",
+    "expected_tools": ["wikipedia"]
   },
   {
-    "question": "If I invest $1000 at 5% annual interest, how much will I have after 1 year (simple interest)?",
-    "expected_answer": "After 1 year, you would have $1,050. Interest = $1000 × 0.05 = $50, Total = $1000 + $50 = $1,050.",
-    "category": "math",
-    "expected_tools": ["calculator"]
+    "question": "Convert 1 liter to fluid ounces",
+    "expected_answer": "1 liter is approximately 33.81 fluid ounces",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
   },
   {
-    "question": "What is the largest ocean on Earth?",
-    "expected_answer": "The Pacific Ocean is the largest ocean on Earth, covering approximately 165.2 million square kilometers",
-    "category": "factual",
-    "expected_tools": ["search"]
+    "question": "How many meters per second is 100 km/h?",
+    "expected_answer": "100 km/h is approximately 27.78 meters per second",
+    "category": "conversion",
+    "expected_tools": ["unit_converter"]
   },
   {
-    "question": "Calculate the hypotenuse of a right triangle with sides 3 and 4",
+    "question": "What is the hypotenuse of a right triangle with sides 3 and 4?",
     "expected_answer": "The hypotenuse is 5. Using the Pythagorean theorem: √(3² + 4²) = √(9 + 16) = √25 = 5",
     "category": "math",
     "expected_tools": ["calculator"]
-  },
-  {
-    "question": "What is the boiling point of water in Fahrenheit?",
-    "expected_answer": "The boiling point of water is 212°F (100°C) at sea level",
-    "category": "factual",
-    "expected_tools": ["search"]
   },
   {
     "question": "How many seconds are in a day?",
     "expected_answer": "There are 86,400 seconds in a day (24 hours × 60 minutes × 60 seconds)",
     "category": "math",
     "expected_tools": ["calculator"]
-  },
-  {
-    "question": "What is the atomic number of carbon?",
-    "expected_answer": "The atomic number of carbon is 6",
-    "category": "factual",
-    "expected_tools": ["search"]
   },
   {
     "question": "Calculate the area of a circle with radius 7 (use pi = 3.14159)",

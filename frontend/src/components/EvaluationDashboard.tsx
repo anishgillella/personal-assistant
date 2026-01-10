@@ -53,6 +53,7 @@ export default function EvaluationDashboard() {
   const [results, setResults] = useState<EvaluationResult | null>(null);
   const [status, setStatus] = useState<EvaluationStatus>({ status: "idle" });
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchResults = async () => {
@@ -73,6 +74,12 @@ export default function EvaluationDashboard() {
     } catch {
       // Status fetch failed
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([fetchResults(), fetchStatus()]);
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -141,15 +148,14 @@ export default function EvaluationDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {results && (
-              <button
-                onClick={fetchResults}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Refresh
-              </button>
-            )}
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing || status.status === "running"}
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+              {refreshing ? "Refreshing..." : "Refresh"}
+            </button>
             <button
               onClick={handleRunEvaluation}
               disabled={status.status === "running"}
@@ -270,7 +276,7 @@ export default function EvaluationDashboard() {
                         tickFormatter={(v) => `${v}%`}
                       />
                       <Tooltip
-                        formatter={(value: number) => [`${value.toFixed(1)}%`, "Score"]}
+                        formatter={(value) => [`${Number(value).toFixed(1)}%`, "Score"]}
                         contentStyle={{
                           borderRadius: "12px",
                           border: "1px solid #e5e7eb",
@@ -324,7 +330,7 @@ export default function EvaluationDashboard() {
                         fillOpacity={0.3}
                       />
                       <Tooltip
-                        formatter={(value: number) => [`${value.toFixed(1)}%`, "Score"]}
+                        formatter={(value) => [`${Number(value).toFixed(1)}%`, "Score"]}
                       />
                     </RadarChart>
                   </ResponsiveContainer>

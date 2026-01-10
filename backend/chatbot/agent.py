@@ -7,6 +7,39 @@ from chatbot.config import settings
 from chatbot.tools import get_tool, get_tool_schemas
 
 
+class TokenUsage:
+    """Track token usage across sessions."""
+
+    def __init__(self):
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.total_tokens = 0
+        self.request_count = 0
+
+    def add(self, prompt_tokens: int, completion_tokens: int):
+        """Add token usage from a request."""
+        self.total_prompt_tokens += prompt_tokens
+        self.total_completion_tokens += completion_tokens
+        self.total_tokens += prompt_tokens + completion_tokens
+        self.request_count += 1
+
+    def to_dict(self) -> dict:
+        """Return usage as dictionary."""
+        return {
+            "prompt_tokens": self.total_prompt_tokens,
+            "completion_tokens": self.total_completion_tokens,
+            "total_tokens": self.total_tokens,
+            "request_count": self.request_count,
+        }
+
+    def reset(self):
+        """Reset all counters."""
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.total_tokens = 0
+        self.request_count = 0
+
+
 class ChatAgent:
     """LLM-powered chatbot agent with tool calling capabilities."""
 
@@ -17,6 +50,7 @@ class ChatAgent:
             api_key=settings.OPENROUTER_API_KEY,
         )
         self.conversations: dict[str, list[dict]] = {}
+        self.token_usage = TokenUsage()
 
     def _get_or_create_conversation(self, conversation_id: Optional[str] = None) -> tuple[str, list[dict]]:
         """
@@ -71,6 +105,22 @@ class ChatAgent:
                 "error": str(e),
             }
 
+    def _track_usage(self, response) -> dict:
+        """Extract and track token usage from response."""
+        usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+        if hasattr(response, "usage") and response.usage:
+            usage["prompt_tokens"] = getattr(response.usage, "prompt_tokens", 0) or 0
+            usage["completion_tokens"] = getattr(response.usage, "completion_tokens", 0) or 0
+            usage["total_tokens"] = getattr(response.usage, "total_tokens", 0) or 0
+
+            self.token_usage.add(
+                usage["prompt_tokens"],
+                usage["completion_tokens"]
+            )
+
+        return usage
+
     def chat(
         self,
         query: str,
@@ -93,6 +143,7 @@ class ChatAgent:
 
         tools_used = []
         max_tool_iterations = 5  # Prevent infinite loops
+        request_usage = {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
 
         try:
             for iteration in range(max_tool_iterations):
@@ -105,6 +156,12 @@ class ChatAgent:
                     max_tokens=settings.MAX_TOKENS,
                     temperature=settings.TEMPERATURE,
                 )
+
+                # Track token usage
+                usage = self._track_usage(response)
+                request_usage["prompt_tokens"] += usage["prompt_tokens"]
+                request_usage["completion_tokens"] += usage["completion_tokens"]
+                request_usage["total_tokens"] += usage["total_tokens"]
 
                 assistant_message = response.choices[0].message
 
@@ -159,6 +216,7 @@ class ChatAgent:
                     "conversation_id": conversation_id,
                     "tools_used": tools_used,
                     "timestamp": datetime.utcnow().isoformat(),
+                    "usage": request_usage,
                 }
 
             # If we've exhausted iterations, return what we have
@@ -168,6 +226,7 @@ class ChatAgent:
                 "conversation_id": conversation_id,
                 "tools_used": tools_used,
                 "timestamp": datetime.utcnow().isoformat(),
+                "usage": request_usage,
             }
 
         except Exception as e:
@@ -177,6 +236,7 @@ class ChatAgent:
                 "conversation_id": conversation_id,
                 "tools_used": tools_used,
                 "timestamp": datetime.utcnow().isoformat(),
+                "usage": request_usage,
             }
 
     def get_conversation(self, conversation_id: str) -> Optional[list[dict]]:
@@ -194,6 +254,14 @@ class ChatAgent:
     def get_all_conversations(self) -> dict[str, list[dict]]:
         """Get all conversations."""
         return self.conversations
+
+    def get_token_usage(self) -> dict:
+        """Get cumulative token usage."""
+        return self.token_usage.to_dict()
+
+    def reset_token_usage(self):
+        """Reset token usage counters."""
+        self.token_usage.reset()
 
     def clear_conversation(self, conversation_id: str) -> bool:
         """
