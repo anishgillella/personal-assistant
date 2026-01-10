@@ -20,6 +20,14 @@ class ToolUsage(BaseModel):
     result: dict[str, Any]
 
 
+class TokenUsageInfo(BaseModel):
+    """Model for token usage information."""
+
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
+
 class ChatResponse(BaseModel):
     """Response model for chat endpoint."""
 
@@ -29,6 +37,16 @@ class ChatResponse(BaseModel):
     conversation_id: str
     tools_used: list[ToolUsage] = []
     timestamp: str
+    usage: Optional[TokenUsageInfo] = None
+
+
+class TokenUsageResponse(BaseModel):
+    """Response model for token usage endpoint."""
+
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    request_count: int
 
 
 class Message(BaseModel):

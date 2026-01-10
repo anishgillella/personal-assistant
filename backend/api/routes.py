@@ -14,6 +14,8 @@ from api.models import (
     EvaluationStatus,
     Message,
     ToolUsage,
+    TokenUsageInfo,
+    TokenUsageResponse,
 )
 from chatbot import ChatAgent
 from evaluation import Evaluator
@@ -47,6 +49,14 @@ async def chat(request: ChatRequest) -> ChatResponse:
         conversation_id=request.conversation_id,
     )
 
+    # Extract usage info
+    usage_data = result.get("usage", {})
+    usage = TokenUsageInfo(
+        prompt_tokens=usage_data.get("prompt_tokens", 0),
+        completion_tokens=usage_data.get("completion_tokens", 0),
+        total_tokens=usage_data.get("total_tokens", 0),
+    ) if usage_data else None
+
     return ChatResponse(
         success=result.get("success", False),
         response=result.get("response"),
@@ -61,6 +71,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
             for t in result.get("tools_used", [])
         ],
         timestamp=result.get("timestamp", datetime.utcnow().isoformat()),
+        usage=usage,
     )
 
 
@@ -251,6 +262,27 @@ async def get_evaluation_results() -> EvaluationResult:
         result = json.load(f)
 
     return EvaluationResult(**result)
+
+
+# ============== Token Usage Endpoints ==============
+
+
+@router.get("/usage", response_model=TokenUsageResponse)
+async def get_token_usage() -> TokenUsageResponse:
+    """
+    Get cumulative token usage statistics.
+    """
+    usage = chat_agent.get_token_usage()
+    return TokenUsageResponse(**usage)
+
+
+@router.post("/usage/reset")
+async def reset_token_usage() -> dict:
+    """
+    Reset token usage counters.
+    """
+    chat_agent.reset_token_usage()
+    return {"success": True, "message": "Token usage counters reset"}
 
 
 # ============== Health Check ==============
