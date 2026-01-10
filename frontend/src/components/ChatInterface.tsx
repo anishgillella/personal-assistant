@@ -197,12 +197,12 @@ export default function ChatInterface() {
               How can I help you today?
             </h2>
             <p className="text-gray-500 max-w-md mb-6">
-              I can search the web, check Wikipedia, get weather, run code,
+              I can search the web, check Wikipedia, run code,
               convert units, and more. Ask me anything!
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
               {[
-                "What's the weather in Tokyo?",
+                "What is 25% of 80?",
                 "Convert 100 miles to km",
                 "How many days until Christmas?",
                 "Who was Albert Einstein?",
